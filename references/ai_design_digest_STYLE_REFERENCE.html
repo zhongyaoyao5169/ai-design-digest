@@ -1,0 +1,170 @@
+<!--
+  AI & Design Daily Digest — LOCKED STYLE REFERENCE
+  版本: v3 (2026-05-15 定稿)
+  说明: 每次推送资讯时，必须完整复用此文件中的 <style> 块和 JS 样式函数，
+        只替换 AID_NEWS / AID_BUILDERS 数据数组的内容。
+        除非用户明确说要改样式，否则禁止修改任何样式代码。
+
+  关键修复点（不可回退）：
+  1. Stat tab 激活态：aidApplyTabStyle() 用 el.style.cssText 强制写入，含 !important
+  2. 语言切换激活态：aidApplyLangStyle() 用 btn.style.cssText 强制写入，含 !important
+  3. 语言按钮圆角：cssText 写 border-radius:0 !important；外层容器 overflow:hidden + border-radius:9px 保胶囊形
+  4. 语言按钮分割线：非末尾按钮在 cssText 中补 border-right:1px solid rgba(26,26,24,.16)
+                      border-top/bottom/left 单独设为 none，不用 border:none 整体覆盖
+  5. Builder 名字徽章截断：.aid-bhd { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+                            日期 .aid-bdate { flex-shrink:0 }
+  6. 行数限制：标题 -webkit-line-clamp:3，正文 -webkit-line-clamp:6
+-->
+
+<!-- ======== LOCKED CSS ======== -->
+<style id="aid-style-locked">
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#faf9f5;--card:#f5f0e8;--text:#1A1A18;--text-muted:#6B6860;--text-faint:#9A9790;
+  --border:rgba(26,26,24,.11);--coral:#C84B2F;--coral-light:#CC785C;
+  --serif:'Georgia',serif;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--r:14px;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:14px}
+.aid-page{max-width:980px;margin:0 auto;padding:0 1.5rem 2rem}
+.aid-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:2rem;padding:1.5rem 0 1.5rem;flex-wrap:wrap}
+.aid-title{font-family:var(--serif);font-size:40px;font-weight:400;color:var(--text);line-height:1.05;letter-spacing:-.02em;margin-bottom:.4rem}
+.aid-sub{font-size:13px;color:var(--text-muted)}
+.aid-lang{display:inline-flex;border:1px solid rgba(26,26,24,.16);border-radius:9px;overflow:hidden;background:rgba(255,255,255,.6);flex-shrink:0;margin-top:.4rem}
+.aid-lt{font-size:12px;padding:6px 16px;border:none;cursor:pointer;font-family:var(--sans);border-radius:0 !important;outline:none}
+.aid-div{height:1px;background:var(--border);margin-bottom:1.5rem}
+.aid-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.5rem}
+.aid-stab{border-radius:var(--r);padding:1rem 1.1rem .9rem;text-align:left;cursor:pointer;font-family:var(--sans);border:1px solid #E1E1DF;outline:none}
+.aid-stab-n{font-family:var(--serif);font-size:24px;font-weight:400;line-height:1;margin-bottom:.35rem}
+.aid-stab-l{font-size:12px;line-height:1.3}
+.aid-sec{display:flex;align-items:center;gap:10px;margin:0 0 .9rem}
+.aid-sec-l{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);white-space:nowrap}
+.aid-sec-line{height:1px;flex:1;background:var(--border)}
+.aid-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:2rem}
+@media(max-width:600px){.aid-grid{grid-template-columns:1fr}.aid-tabs{grid-template-columns:repeat(2,1fr)}}
+.aid-card{background:var(--card);border:none;border-radius:var(--r);padding:1.4rem 1.4rem 1.2rem;display:flex;flex-direction:column;text-decoration:none;color:inherit;transition:box-shadow .15s,transform .15s}
+a.aid-card:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(26,26,24,.08)}
+.aid-cm{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:.9rem}
+.aid-tag{font-size:10px;padding:2px 9px;border-radius:20px;background:rgba(26,26,24,.07);color:var(--text-muted)}
+.aid-time{font-size:11px;color:var(--text-faint)}
+.aid-ct{font-family:var(--serif);font-size:18px;font-weight:400;line-height:1.3;color:var(--text);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.aid-cten{font-size:12.5px;color:var(--text-muted);font-family:var(--sans);margin-top:4px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.aid-cb{font-size:13px;color:var(--text-muted);line-height:1.65;margin-top:.75rem;flex:1;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden}
+.aid-cben{font-size:12px;color:var(--text-faint);line-height:1.55;margin-top:4px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.aid-cf{margin-top:1rem;display:flex;align-items:flex-end;justify-content:space-between;gap:8px}
+.aid-cau{font-size:11px;color:var(--text-faint)}
+.aid-cl{font-size:12.5px;color:var(--coral);text-decoration:underline;text-underline-offset:2px;text-decoration-color:rgba(200,75,47,.4);white-space:nowrap}
+a.aid-card:hover .aid-cl{text-decoration-color:var(--coral)}
+.aid-bgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:2rem}
+@media(max-width:640px){.aid-bgrid{grid-template-columns:1fr}}
+.aid-bcard{background:transparent;border:1px solid #E1E1DF;border-radius:var(--r);padding:1.25rem 1.35rem 1.15rem;display:flex;flex-direction:column;text-decoration:none;color:inherit;transition:box-shadow .15s,transform .15s}
+a.aid-bcard:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(26,26,24,.07)}
+.aid-bh{display:flex;align-items:center;gap:8px;margin-bottom:.9rem;min-width:0}
+.aid-bhd{display:inline-block;font-family:var(--serif);font-size:14px;font-weight:400;color:var(--text);background:#EFE9DE;border-radius:6px;height:26px;line-height:26px;padding:0 11px;letter-spacing:-.01em;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.aid-bdate{font-size:11px;color:var(--text-faint);white-space:nowrap;flex-shrink:0}
+.aid-bt{font-family:var(--serif);font-size:15px;font-weight:400;line-height:1.4;color:var(--text);margin-bottom:.7rem;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.aid-bten{font-size:11.5px;color:var(--text-muted);font-family:var(--sans);margin-top:3px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.aid-bb{font-size:12.5px;color:var(--text-muted);line-height:1.6;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden}
+.aid-bben{font-size:11.5px;color:var(--text-faint);line-height:1.55;margin-top:3px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.aid-bf{margin-top:.9rem;display:flex;align-items:center}
+.aid-bau{font-size:11px;color:var(--text-faint)}
+.aid-empty{text-align:center;padding:2.5rem 0;color:var(--text-muted);font-size:13px}
+</style>
+
+<!-- ======== LOCKED HTML SKELETON ======== -->
+<!--
+<div class="aid-page">
+  <div class="aid-hd">
+    <div>
+      <div class="aid-title">AI &amp; Design</div>
+      <div class="aid-sub" id="aid-sub">每日资讯 · 实时整理</div>
+    </div>
+    <div class="aid-lang" id="aid-lang-wrap">
+      <button class="aid-lt" onclick="aidSetLang('zh',0)">中文</button>
+      <button class="aid-lt" onclick="aidSetLang('en',1)">EN</button>
+      <button class="aid-lt" onclick="aidSetLang('bi',2)">双语</button>
+    </div>
+  </div>
+  <div class="aid-div"></div>
+  <div class="aid-tabs" id="aid-tab-wrap">
+    <button class="aid-stab" onclick="aidSetTab('all',this)">
+      <div class="aid-stab-n" id="aid-s-all">—</div>
+      <div class="aid-stab-l">今日资讯</div>
+    </button>
+    <button class="aid-stab" onclick="aidSetTab('ainews',this)">
+      <div class="aid-stab-n" id="aid-s-ai">—</div>
+      <div class="aid-stab-l">AI 前沿 · 行业动态</div>
+    </button>
+    <button class="aid-stab" onclick="aidSetTab('design',this)">
+      <div class="aid-stab-n" id="aid-s-design">—</div>
+      <div class="aid-stab-l">设计 / 工具</div>
+    </button>
+    <button class="aid-stab" onclick="aidSetTab('builder',this)">
+      <div class="aid-stab-n" id="aid-s-builder">—</div>
+      <div class="aid-stab-l">Builder 观点</div>
+    </button>
+  </div>
+  <div id="aid-content"></div>
+</div>
+-->
+
+<!-- ======== LOCKED JS STYLE FUNCTIONS ======== -->
+<script id="aid-js-locked">
+/*
+ * aidApplyTabStyle
+ * Stat tab 激活态强制写入 — isActive=true: 珊瑚 #CC785C 背景 + 白字
+ */
+function aidApplyTabStyle(el, isActive) {
+  var n = el.querySelector(".aid-stab-n"), l = el.querySelector(".aid-stab-l");
+  if (isActive) {
+    el.style.cssText = "background:#CC785C !important;border:1px solid #CC785C !important;border-radius:14px;padding:1rem 1.1rem .9rem;text-align:left;cursor:pointer;font-family:sans-serif;outline:none;";
+    n.style.cssText = "color:#ffffff !important;font-family:'Georgia',serif;font-size:24px;font-weight:400;line-height:1;margin-bottom:.35rem;";
+    l.style.cssText = "color:rgba(255,255,255,0.75) !important;font-size:12px;line-height:1.3;";
+  } else {
+    el.style.cssText = "background:#FDFCFB;border:1px solid #E1E1DF;border-radius:14px;padding:1rem 1.1rem .9rem;text-align:left;cursor:pointer;font-family:sans-serif;outline:none;";
+    n.style.cssText = "color:#1A1A18;font-family:'Georgia',serif;font-size:24px;font-weight:400;line-height:1;margin-bottom:.35rem;";
+    l.style.cssText = "color:#6B6860;font-size:12px;line-height:1.3;";
+  }
+}
+
+/*
+ * aidApplyLangStyle
+ * 语言切换激活态 — 关键：border-right 单独写（不可用 border:none 整体覆盖，否则分割线消失）
+ */
+function aidApplyLangStyle(btns, activeIdx) {
+  btns.forEach(function(btn, i) {
+    var divider = i < btns.length - 1 ? "border-right:1px solid rgba(26,26,24,.16);" : "";
+    if (i === activeIdx) {
+      btn.style.cssText = "background:#1A1A18 !important;color:#ffffff !important;font-weight:500;font-size:12px;padding:6px 16px;border-top:none;border-bottom:none;border-left:none;cursor:pointer;font-family:sans-serif;border-radius:0 !important;outline:none;" + divider;
+    } else {
+      btn.style.cssText = "background:transparent !important;color:#6B6860;font-weight:400;font-size:12px;padding:6px 16px;border-top:none;border-bottom:none;border-left:none;cursor:pointer;font-family:sans-serif;border-radius:0 !important;outline:none;" + divider;
+    }
+  });
+}
+
+/*
+ * aidSetLang / aidSetTab — 事件处理函数，按钮 onclick 调用
+ * 必须与 aidApplyTabStyle / aidApplyLangStyle 一起带入每次渲染
+ */
+function aidSetLang(l, idx) {
+  aidLang = l;
+  aidApplyLangStyle(Array.from(document.querySelectorAll(".aid-lt")), idx);
+  aidRender();
+}
+function aidSetTab(t, el) {
+  aidTab = t;
+  Array.from(document.querySelectorAll(".aid-stab")).forEach(function(btn) {
+    aidApplyTabStyle(btn, btn === el);
+  });
+  aidRender();
+}
+
+/*
+ * 初始化调用（aidRender() 完成后立即执行）：
+ *
+ * aidRender();
+ * var allTabs = Array.from(document.querySelectorAll(".aid-stab"));
+ * aidApplyTabStyle(allTabs[0], true);
+ * allTabs.slice(1).forEach(function(btn){ aidApplyTabStyle(btn, false); });
+ * aidApplyLangStyle(Array.from(document.querySelectorAll(".aid-lt")), 0);
+ */
+</script>
